@@ -1,0 +1,37 @@
+---
+- name: Deploy Application
+  hosts: localhost
+  vars_files:
+    - vars.yml
+  vars:
+    acct_id: 445745013648
+    region: us-west-2
+    git_repo_url: https://github.com/AshrafElshazly/AWS-DevOps-Project
+
+  tasks:
+    - name: Check Git repository
+      git:
+        repo: "{{ git_repo_url }}"
+        dest: "/home/ubuntu/CI"
+        update: yes
+
+    - name: Docker Clean up
+      docker_prune:
+        containers: true
+        images: true
+        images_filters:
+          dangling: false
+        networks: true
+        volumes: true
+        builder_cache: true
+
+    - name: Log in to ECR
+      shell: aws ecr get-login-password --region {{ region }} | docker login --username AWS --password-stdin {{ acct_id }}.dkr.ecr.{{ region }}.amazonaws.com
+
+    - name: Build Docker Image
+      docker_image:
+        build:
+          path: "/home/ubuntu/CI"
+        name: "{{ acct_id }}.dkr.ecr.{{ region }}.amazonaws.com/application"
+        push: true
+        source: build

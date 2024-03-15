@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  node_app:
+    image: node_app
+    build:
+      context: ./app
+      dockerfile: Dockerfile
+    ports:
+      - 3000:3000
+    networks:
+      - services-network
+
+  mysql_master:
+    image: mysql_master
+    build: 
+      context: ./database/master
+      dockerfile: Dockerfile
+    env_file:
+      - ./database/master/mysql_master.env
+    command: 
+      --default-authentication-plugin=mysql_native_password
+      --sql_mode=NO_ENGINE_SUBSTITUTION
+      --log-bin=mysql-bin
+    ports:
+      - 3306:3306
+    networks:
+      - services-network
+
+  mysql_slave:
+    image: mysql_slave
+    build: 
+      context: ./database/slave
+      dockerfile: Dockerfile
+    env_file:
+      - ./database/slave/mysql_slave.env
+    command: 
+      --default-authentication-plugin=mysql_native_password
+      --sql_mode=NO_ENGINE_SUBSTITUTION
+      --log-bin=mysql-bin
+    ports:
+      - 3307:3306
+    networks:
+      - services-network
+
+networks:
+  services-network:
+    driver: bridge

@@ -1,0 +1,9 @@
+variable "vpc_id" {}
+
+variable "public_subnet_1_id" {}
+
+variable "public_subnet_2_id" {}
+
+variable "app1_id" {}
+
+variable "app2_id" {}

@@ -1,0 +1,35 @@
+- hosts: localhost
+  vars_files:
+    - vars.yml
+  tasks:
+    - name: Log in to ECR
+      shell: aws ecr get-login-password --region {{ region }} | docker login --username AWS --password-stdin {{ acct_id }}.dkr.ecr.{{ region }}.amazonaws.com
+
+    - name: Stop docker containers
+      shell: |
+        docker stop $(docker ps -aq)
+      ignore_errors: yes
+
+    - name: Docker Clean up
+      docker_prune:
+        containers: true
+        images: true
+        images_filters:
+          dangling: false
+        networks: true
+        volumes: true
+        builder_cache: true
+
+    - name: Pull Docker image
+      docker_image:
+        name: "{{ acct_id }}.dkr.ecr.{{ region }}.amazonaws.com/application"
+        source: pull
+
+    - name: Run the Docker container
+      docker_container:
+        name: node-app
+        image: "{{ acct_id }}.dkr.ecr.{{ region }}.amazonaws.com/application"
+        state: started
+        restart_policy: always
+        ports:
+          - "3000:3000"

@@ -1,0 +1,77 @@
+pipeline{
+    agent any
+
+    environment {
+        AWS_ACCESS_KEY_ID     = credentials('aws_access_key_id')
+        AWS_SECRET_ACCESS_KEY = credentials('aws_secret_access_key')
+        region                = "us-east-2"
+    }
+    stages{
+
+
+        stage('checkout the repo'){
+            steps{
+                git branch: 'main', credentialsId: 'github_cred', url: 'https://github.com/AshrafElshazly/devops.git'
+            }
+        }
+        stage('initialize terraform '){
+            steps{
+                script{
+                    dir("terraform"){
+                        sh 'terraform init'
+                    }
+                }
+            }
+        }
+        stage('validate terraform syntax'){
+            steps{
+                script{
+                    dir("terraform"){
+                        sh 'terraform validate'
+                    }
+                }
+            }
+        }
+        stage('terraform formate'){
+            steps{
+                script{
+                    dir("terraform"){
+                        sh 'terraform fmt'
+                    }
+                }
+            }
+        }
+        stage('terraform plan'){
+            steps{
+                script{
+                    dir("terraform"){
+                        sh 'terraform plan'
+                    }
+                }
+            }
+        }
+        stage('terraform apply or destroy'){
+            steps{
+                script{
+                    dir("terraform"){
+                        
+                        if (params.action == "apply"){
+
+                            sh '''
+                            echo "Building the infra now"
+                            terraform apply --auto-approve
+                            '''
+                        } else if (params.action == "destroy"){
+                            sh '''
+                                echo "Destroying the infra now"
+                                terraform destroy --auto-approve
+                                '''
+                        } else {
+                            sh ' echo "Insert correct paramter please" '
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
