@@ -6,13 +6,13 @@ terraform {
     }
   }
 
-  backend "s3" {
-    bucket         = "elshazlii-master-tfstate-east1"
-    region         = "us-east-1"
-    key            = "terraform.tfstate"
-    dynamodb_table = "terraform_lock_master"
-    encrypt        = true
-  }
+  # backend "s3" {
+  #   bucket         = "elshazlii-master-tfstate-east1"
+  #   region         = "us-east-1"
+  #   key            = "terraform.tfstate"
+  #   dynamodb_table = "terraform_lock_master"
+  #   encrypt        = true
+  # }
 }
 
 provider "aws" {

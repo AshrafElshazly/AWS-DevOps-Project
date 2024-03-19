@@ -1,9 +1,3 @@
-
-
-
-
-
-
 resource "aws_route_table" "public_route_table" {
   vpc_id = aws_vpc.vpc.id
 
@@ -23,30 +17,24 @@ resource "aws_route_table_association" "public_association" {
   route_table_id = aws_route_table.public_route_table.id
 }
 
-resource "aws_eip" "nat_gateway" {}
-
-resource "aws_nat_gateway" "nat_gateway" {
-  allocation_id = aws_eip.nat_gateway.id
-  subnet_id     = aws_subnet.public_subnet[0].id
-
-  tags = {
-    Name = "nat_gateway"
-  }
-
-  depends_on = [aws_internet_gateway.igw]
-}
-
 resource "aws_route_table" "private_route_table" {
   vpc_id = aws_vpc.vpc.id
+  count  = 2
 
   route {
     cidr_block     = "0.0.0.0/0"
-    nat_gateway_id = aws_nat_gateway.nat_gateway.id
+    nat_gateway_id = aws_nat_gateway.nat_gateway[count.index].id
   }
 }
 
-resource "aws_route_table_association" "private_association" {
-  count          = 4
+resource "aws_route_table_association" "private_association_1" {
+  count          = 2
   subnet_id      = aws_subnet.private_subnet[count.index].id
-  route_table_id = aws_route_table.private_route_table.id
+  route_table_id = aws_route_table.private_route_table[0].id
+}
+
+resource "aws_route_table_association" "private_association_2" {
+  count          = 2
+  subnet_id      = aws_subnet.private_subnet[count.index + 2].id
+  route_table_id = aws_route_table.private_route_table[1].id
 }

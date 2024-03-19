@@ -3,11 +3,6 @@ variable "region" {
   type = string
 }
 
-#Networks
-variable "az" {
-  type = string
-}
-
 #App EC2
 variable "ami" {
   type = string
